@@ -102,9 +102,7 @@
   .hero-tag::before { content: ""; width: clamp(20px, 2.2vw, 34px); height: 2px; background: var(--accent); border-radius: 2px; }
   .hero-headline { margin-top: clamp(6px, 1vw, 14px); font-family: 'Syne', sans-serif; font-size: clamp(26px, 4.5vw, 65px); line-height: 0.95; letter-spacing: -0.04em; font-weight: 900; text-transform: uppercase; color: var(--heading-dynamic); word-break: break-word; }
   .hero-headline .accent-txt { color: var(--accent); background: linear-gradient(135deg, #00ffcc 0%, #0096ff 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-</style>
-</head>
-<style>
+
   .controls-header-bar { display: flex; flex-direction: column; gap: 10px; margin-bottom: 10px; }
   .channel-search-input { width: 100%; max-width: 320px; background: var(--bg-card); border: 1px solid var(--border-glass-bright); color: var(--text-main); padding: 8px 16px; border-radius: 100px; font-family: 'Manrope', sans-serif; font-size: clamp(11px, 0.8vw, 13px); outline: none; backdrop-filter: blur(12px); transition: all 0.3s ease; }
   .channel-search-input:focus { border-color: var(--accent); box-shadow: 0 0 15px var(--accent-glow); }
@@ -144,26 +142,6 @@
   video#video { width: 100%; height: 100%; object-fit: contain; }
   .shaka-spinner-container, .shaka-buffering-spinner { display: none !important; }
 
-  .var-chevron-wipe {
-    position: absolute; inset: 0; pointer-events: none; z-index: 999; display: flex; opacity: 0;
-  }
-  .var-chevron-wipe.active {
-    animation: chevronWipeAnim 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  }
-  .var-chevron-slice {
-    flex: 1; background: linear-gradient(135deg, rgba(0,255,204,0.85) 0%, rgba(0,120,255,0.85) 100%);
-    transform: translateY(-100%); transition: transform 0.3s ease;
-  }
-  .var-chevron-wipe.active .var-chevron-slice:nth-child(1) { animation: slideDown 0.45s 0.0s ease forwards; }
-  .var-chevron-wipe.active .var-chevron-slice:nth-child(2) { animation: slideDown 0.45s 0.05s ease forwards; }
-  .var-chevron-wipe.active .var-chevron-slice:nth-child(3) { animation: slideDown 0.45s 0.1s ease forwards; }
-  .var-chevron-wipe.active .var-chevron-slice:nth-child(4) { animation: slideDown 0.45s 0.15s ease forwards; }
-  @keyframes slideDown {
-    0% { transform: translateY(-100%); opacity: 1; }
-    50% { transform: translateY(0%); opacity: 1; }
-    100% { transform: translateY(100%); opacity: 0; }
-  }
-
   .player-meta-bar { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: clamp(14px, 1.6vw, 22px) 2px 0; flex-wrap: wrap; }
   .stream-title-group { display: flex; align-items: center; gap: 12px; }
   
@@ -196,7 +174,6 @@
   .footer { margin-top: clamp(44px, 6vw, 80px); border-top: 1px solid var(--border-glass); padding: 20px 0 calc(20px + env(safe-area-inset-bottom)); display: flex; align-items: center; justify-content: space-between; color: var(--text-dark); font-family: 'Space Grotesk', sans-serif; font-size: clamp(8.5px, 0.7vw, 10.5px); letter-spacing: 1.2px; text-transform: uppercase; font-weight: 600; }
   .footer strong { color: var(--text-muted); }
 
-  /* --- FEATHERED MASKING & SOFT FADE-IN POPUP STYLES --- */
   #tg-overlay { 
     position: fixed; inset: 0; z-index: 99998; 
     background: rgba(2, 6, 12, 0.85); 
@@ -293,12 +270,6 @@
     <div class="track-separator-beam"></div>
 
     <div class="player-rig-box">
-      <div class="var-chevron-wipe" id="varChevronOverlay">
-        <div class="var-chevron-slice"></div>
-        <div class="var-chevron-slice"></div>
-        <div class="var-chevron-slice"></div>
-        <div class="var-chevron-slice"></div>
-      </div>
       <div id="player-wrap" data-shaka-player-container class="shaka-video-container" shaka-controls="true">
         <video autoplay muted playsinline data-shaka-player id="video" class="shaka-video"></video>
       </div>
@@ -416,12 +387,6 @@ var masterChannels = [
     channel_name: "Bein Sports 2 AU",
     stream_url: "https://otte.live.fly.ww.aiv-cdn.net/syd-nitro/live/clients/dash/enc/8m8cd46i1t/out/v1/83985c68e4174e90a58a1f2c024be4c9/cenc.mpd",
     stream_keys: "0b42be2664d7e811d04f3e504e0924c5:ae24090123b8c72ac5404dc152847cb8"
-  },
-  {
-    id: "bein3",
-    channel_name: "Bein Sports 3 AU",
-    stream_url: "https://a122aivottlinear-a.akamaihd.net/OTTB/syd-nitro/live/clients/dash/enc/q4u5nwaogz/out/v1/18de6d3e65934f3a8de4358e69eab86c/cenc.mpd",
-    stream_keys: "7995c724a13748ed970840a8ab5bb9b3:67bdaf1e2175b9ff682fcdf0e2354b1e"
   },
   {
     id: "fubo1",
@@ -591,13 +556,6 @@ async function initPlayer(event) {
 async function loadChannel(channel, pushHistory = true) {
   currentActiveChannel = channel;
   showStatus('Switching to ' + channel.channel_name + '...');
-  
-  var varOverlay = document.getElementById('varChevronOverlay');
-  if (varOverlay) {
-    varOverlay.classList.remove('active');
-    void varOverlay.offsetWidth;
-    varOverlay.classList.add('active');
-  }
 
   var heroHeading = document.getElementById('heroHeadlineText');
   if (heroHeading) {
@@ -620,7 +578,6 @@ async function loadChannel(channel, pushHistory = true) {
     }
   }
 
-  // Optimized for Chrome: aggressive low-latency & quick buffer sync
   playerInstance.configure({
     streaming: {
       lowLatencyMode: true,
@@ -724,7 +681,6 @@ function initEventListeners() {
     var shareableURL = window.location.protocol + "//" + window.location.host + window.location.pathname + '?ch=' + (currentActiveChannel ? currentActiveChannel.id : 'tnt1');
     var channelHeading = currentActiveChannel ? currentActiveChannel.channel_name : "Live Match Feed";
     
-    // Strict user requirement format: Channel Name + newline + Exact URL with channel ID
     var shareText = channelHeading + "\n" + shareableURL;
     
     var shareData = {
