@@ -620,13 +620,16 @@ async function loadChannel(channel, pushHistory = true) {
     }
   }
 
+  // Optimized for Chrome: aggressive low-latency & quick buffer sync
   playerInstance.configure({
     streaming: {
       lowLatencyMode: true,
       inaccurateManifestTolerance: 0,
-      bufferingGoal: 15,
-      rebufferingGoal: 2,
-      bufferBehind: 30
+      bufferingGoal: 6,
+      rebufferingGoal: 1,
+      bufferBehind: 15,
+      stallEnabled: true,
+      stallThreshold: 1
     },
     drm: {
       clearKeys: clearKeysObj,
@@ -721,8 +724,8 @@ function initEventListeners() {
     var shareableURL = window.location.protocol + "//" + window.location.host + window.location.pathname + '?ch=' + (currentActiveChannel ? currentActiveChannel.id : 'tnt1');
     var channelHeading = currentActiveChannel ? currentActiveChannel.channel_name : "Live Match Feed";
     
-    // Exact formatted text requested by user: Channel Name + URL with channel ID
-    var shareText = "⚽ " + channelHeading + "\n🔗 " + shareableURL;
+    // Strict user requirement format: Channel Name + newline + Exact URL with channel ID
+    var shareText = channelHeading + "\n" + shareableURL;
     
     var shareData = {
       title: "CRICXCRATE — " + channelHeading,
