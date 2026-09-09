@@ -1,23 +1,36 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="referrer" content="no-referrer">
-    <title>CricXCrate Live - Football Arena Pro</title>
-    <style>
-        /* Reset the page body so the component naturally fills the screen */
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #050a0f; }
-    </style>
-    
-    <!-- Load Configuration -->
-    <script src="config.js" defer></script>
-    
-    <!-- Load the Obfuscated Custom Web Component -->
-    <script src="cricxcrate-ui.js" defer></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=5,user-scalable=yes,viewport-fit=cover">
+  <meta name="theme-color" content="#00040a">
+  <meta name="color-scheme" content="dark light">
+  <meta name="referrer" content="no-referrer">
+  <title>FootxCrate — TNT Sports</title>
+
+  <!-- Player Dependencies in Global Scope -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.7.11/shaka-player.compiled.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/plyr@3.7.8/dist/plyr.polyfilled.js"></script>
+
+  <!-- FootxCrate Web Component -->
+  <script src="FootxCrate-ui.js" defer></script>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      background: #00040a;
+      overflow-x: hidden;
+    }
+  </style>
 </head>
 <body>
-    <!-- The entire UI lives inside this custom tag -->
-    <cricxcrate-ui></cricxcrate-ui>
+
+  <!-- The Stream links and DRM are now handled inside the JS component array directly for easy multiplex switching -->
+  <footxcrate-ui 
+    telegram-link="https://t.me/+W6YlSdXBttFjOGM1">
+  </footxcrate-ui>
+
 </body>
 </html>
