@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="referrer" content="no-referrer">
-<title id="pageMetaTitle">CricXCrate Live - Football Arena Pro</title>
+<title>CricXCrate Live - Football Arena Pro</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/shaka-player@latest/dist/controls.css" crossorigin="anonymous">
 <script src="https://cdn.jsdelivr.net/npm/shaka-player@latest/dist/shaka-player.ui.js" crossorigin="anonymous"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -17,9 +17,9 @@
     --accent-glow: rgba(var(--primary-rgb), 0.45);
     --accent-glow-intense: rgba(var(--primary-rgb), 0.85);
     --bg-pure: #050a0f; 
-    --bg-card: rgba(10, 22, 30, 0.82);
-    --border-glass: rgba(0, 255, 204, 0.2);
-    --border-glass-bright: rgba(0, 255, 204, 0.45);
+    --bg-card: rgba(12, 18, 28, 0.75);
+    --border-glass: rgba(0, 255, 204, 0.15);
+    --border-glass-bright: rgba(0, 255, 204, 0.35);
     --heading-dynamic: #ffffff;
     --text-main: #e0f2f1;
     --text-muted: #78909c;
@@ -34,9 +34,9 @@
     --accent: #00c8b4;
     --accent-glow: rgba(0, 200, 180, 0.35);
     --bg-pure: #f0f7f7;
-    --bg-card: rgba(255, 255, 255, 0.88);
+    --bg-card: rgba(255, 255, 255, 0.85);
     --border-glass: rgba(0, 0, 0, 0.1);
-    --border-glass-bright: rgba(0, 200, 180, 0.4);
+    --border-glass-bright: rgba(0, 0, 0, 0.25);
     --heading-dynamic: #000000;
     --text-main: #0a0f12;
     --text-muted: #546e7a;
@@ -57,6 +57,7 @@
     position: relative;
   }
 
+  /* Stadium Floodlights Ambient Sweep Background */
   body::before {
     content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 1;
     background: linear-gradient(115deg, transparent 40%, rgba(var(--primary-rgb), 0.04) 48%, rgba(var(--primary-rgb), 0.08) 50%, rgba(var(--primary-rgb), 0.04) 52%, transparent 60%);
@@ -78,6 +79,7 @@
   .nav-actions { display: flex; align-items: center; gap: clamp(8px, 1vw, 14px); }
   .live-pill-badge { height: clamp(32px, 2.8vw, 40px); padding: 0 clamp(12px, 1.2vw, 16px); display: flex; align-items: center; gap: 6px; background: var(--bg-card); border: 1px solid var(--border-glass); backdrop-filter: blur(16px); border-radius: 100px; color: var(--text-muted); font-family: 'DM Mono', monospace; font-size: clamp(8px, 0.7vw, 10px); letter-spacing: 1.2px; text-transform: uppercase; }
   
+  /* High-Tension Heartbeat Live Dot Animation */
   .pulsing-live-dot { width: 6px; height: 6px; background: #ff2a2a; border-radius: 50%; box-shadow: 0 0 12px #ff2a2a; animation: heartbeatSignal 1.4s ease-in-out infinite; }
   @keyframes heartbeatSignal {
     0%, 100% { transform: scale(1); opacity: 1; box-shadow: 0 0 8px #ff2a2a; }
@@ -102,9 +104,7 @@
   .hero-tag::before { content: ""; width: clamp(20px, 2.2vw, 34px); height: 2px; background: var(--accent); border-radius: 2px; }
   .hero-headline { margin-top: clamp(6px, 1vw, 14px); font-family: 'Syne', sans-serif; font-size: clamp(26px, 4.5vw, 65px); line-height: 0.95; letter-spacing: -0.04em; font-weight: 900; text-transform: uppercase; color: var(--heading-dynamic); word-break: break-word; }
   .hero-headline .accent-txt { color: var(--accent); background: linear-gradient(135deg, #00ffcc 0%, #0096ff 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-</style>
-</head>
-<style>
+
   .controls-header-bar { display: flex; flex-direction: column; gap: 10px; margin-bottom: 10px; }
   .channel-search-input { width: 100%; max-width: 320px; background: var(--bg-card); border: 1px solid var(--border-glass-bright); color: var(--text-main); padding: 8px 16px; border-radius: 100px; font-family: 'Manrope', sans-serif; font-size: clamp(11px, 0.8vw, 13px); outline: none; backdrop-filter: blur(12px); transition: all 0.3s ease; }
   .channel-search-input:focus { border-color: var(--accent); box-shadow: 0 0 15px var(--accent-glow); }
@@ -113,13 +113,19 @@
   .channel-selector-bar::-webkit-scrollbar { height: 4px; }
   .channel-selector-bar::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 4px; }
   
+  /* Tactical Board Hover Effect & Channel Buttons */
   .channel-btn { 
     background: var(--bg-card); color: var(--text-main); border: 1px solid var(--border-glass); 
     padding: 8px 18px; border-radius: 100px; cursor: pointer; font-family: 'Space Grotesk', sans-serif; 
     font-size: clamp(11px, 0.8vw, 13px); font-weight: 700; letter-spacing: 0.5px; backdrop-filter: blur(12px); 
     transition: all 0.3s ease; flex-shrink: 0; position: relative; overflow: hidden; 
   }
-  .channel-btn:hover { border-color: var(--accent); color: var(--accent); transform: translateY(-1px); }
+  .channel-btn:hover { 
+    border-color: var(--accent); color: var(--accent); transform: translateY(-1px); 
+    background-image: radial-gradient(circle, rgba(0,255,204,0.15) 10%, transparent 10.01%);
+    background-repeat: no-repeat; background-position: 50%; background-size: 1000% 1000%;
+    transition: background 0.5s, transform 0.3s;
+  }
   .channel-btn.active { 
     background: var(--accent); color: #000; border-color: var(--accent); 
     animation: neonBreathe 2.5s ease-in-out infinite; 
@@ -129,6 +135,7 @@
     50% { box-shadow: 0 0 25px rgba(var(--primary-rgb), 0.85); }
   }
 
+  /* Kick Impact Shockwave Ripple Effect */
   .kick-ripple {
     position: absolute; border-radius: 50%; background: rgba(0, 255, 204, 0.4);
     transform: scale(0); animation: rippleEffect 0.6s linear forwards; pointer-events: none;
@@ -144,6 +151,7 @@
   video#video { width: 100%; height: 100%; object-fit: contain; }
   .shaka-spinner-container, .shaka-buffering-spinner { display: none !important; }
 
+  /* VAR / TV Broadcast Chevron Wipe Transition */
   .var-chevron-wipe {
     position: absolute; inset: 0; pointer-events: none; z-index: 999; display: flex; opacity: 0;
   }
@@ -167,6 +175,7 @@
   .player-meta-bar { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: clamp(14px, 1.6vw, 22px) 2px 0; flex-wrap: wrap; }
   .stream-title-group { display: flex; align-items: center; gap: 12px; }
   
+  /* Live Audio Equalizer Waveform Animation */
   .audio-equalizer { display: inline-flex; align-items: flex-end; gap: 3px; height: 16px; width: 20px; }
   .audio-equalizer span { display: block; width: 3px; background: var(--accent); border-radius: 2px; animation: eqPulse 0.8s ease-in-out infinite alternate; box-shadow: 0 0 8px var(--accent-glow); }
   .audio-equalizer span:nth-child(1) { height: 100%; animation-delay: 0.1s; }
@@ -196,31 +205,29 @@
   .footer { margin-top: clamp(44px, 6vw, 80px); border-top: 1px solid var(--border-glass); padding: 20px 0 calc(20px + env(safe-area-inset-bottom)); display: flex; align-items: center; justify-content: space-between; color: var(--text-dark); font-family: 'Space Grotesk', sans-serif; font-size: clamp(8.5px, 0.7vw, 10.5px); letter-spacing: 1.2px; text-transform: uppercase; font-weight: 600; }
   .footer strong { color: var(--text-muted); }
 
-  /* --- FEATHERED MASKING & SOFT FADE-IN POPUP STYLES --- */
+  /* Secure Cyber-Border Beam Popup Animation */
   #tg-overlay { 
     position: fixed; inset: 0; z-index: 99998; 
-    background: rgba(2, 6, 12, 0.85); 
-    backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+    background: rgba(2, 4, 8, 0.85); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
     opacity: 0; pointer-events: none; 
     transition: opacity 1s cubic-bezier(0.16, 1, 0.3, 1); 
   }
   #tg-overlay.show { opacity: 1; pointer-events: all; }
 
   #tg-popup { 
-    position: fixed; left: 50%; top: 50%; z-index: 99999; 
+    position: fixed; left: 50%; top: 50%; transform: translate(-50%, -46%) scale(0.92); z-index: 99999; 
     width: min(420px, 90vw); background: var(--bg-card); 
-    border: 1px solid var(--border-glass-bright); 
-    border-radius: 28px; padding: clamp(28px, 4.5vw, 40px); 
-    color: var(--text-main); text-align: center; 
-    box-shadow: 0 40px 100px rgba(0,0,0,0.85), 0 0 30px rgba(0,255,204,0.2); 
-    
-    -webkit-mask-image: radial-gradient(circle at 50% 50%, black 70%, rgba(0,0,0,0.6) 90%, transparent 100%);
-    mask-image: radial-gradient(circle at 50% 50%, black 70%, rgba(0,0,0,0.6) 90%, transparent 100%);
-    
-    transform: translate(-50%, -46%) scale(0.92);
+    border: 1px solid rgba(0, 255, 204, 0.6); 
+    border-radius: 28px; padding: clamp(28px, 4.5vw, 42px); color: var(--text-main); text-align: center; 
+    box-shadow: 0 40px 100px rgba(0,0,0,0.85), 0 0 30px rgba(0,255,204,0.25); 
     opacity: 0; pointer-events: none; 
     transition: opacity 1s cubic-bezier(0.16, 1, 0.3, 1), transform 1s cubic-bezier(0.16, 1, 0.3, 1); 
     backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+    animation: cyberBorderPulse 3s ease-in-out infinite;
+  }
+  @keyframes cyberBorderPulse {
+    0%, 100% { border-color: rgba(0, 255, 204, 0.4); box-shadow: 0 40px 100px rgba(0,0,0,0.85), 0 0 20px rgba(0,255,204,0.15); }
+    50% { border-color: rgba(0, 255, 204, 0.95); box-shadow: 0 40px 100px rgba(0,0,0,0.85), 0 0 40px rgba(0,255,204,0.45); }
   }
 
   #tg-popup.show { 
@@ -228,7 +235,6 @@
     transform: translate(-50%, -50%) scale(1); 
     transition: opacity 1s cubic-bezier(0.16, 1, 0.3, 1), transform 1s cubic-bezier(0.16, 1, 0.3, 1); 
   }
-
   #tg-popup.hiding { 
     opacity: 0 !important; pointer-events: none !important; 
     transform: translate(-50%, -54%) scale(0.9) !important; 
@@ -293,6 +299,7 @@
     <div class="track-separator-beam"></div>
 
     <div class="player-rig-box">
+      <!-- VAR / TV Broadcast Chevron Wipe Transition Overlay -->
       <div class="var-chevron-wipe" id="varChevronOverlay">
         <div class="var-chevron-slice"></div>
         <div class="var-chevron-slice"></div>
@@ -341,7 +348,7 @@
     <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69.01-.03.01-.14-.07-.19-.08-.05-.19-.02-.27 0-.11.03-1.84 1.18-5.21 3.45-.49.33-.94.49-1.35.48-.45-.01-1.31-.25-1.95-.46-.79-.26-1.42-.4-1.36-.84.03-.23.35-.47.96-.73 3.77-1.64 6.29-2.73 7.55-3.25 3.59-1.49 4.33-1.75 4.81-1.76.11 0 .35.03.48.14.11.09.14.22.15.34-.01.07-.01.19-.02.26z"/></svg>
   </div>
   <h3>Join For Free HD Links</h3>
-  <p>Get instant access to all football feeds, updates, and live streaming links.</p>
+  <p>Get instant access to all sports feeds, updates, and live streaming links.</p>
   <a id="tg-join" href="https://t.me/+xSqMXDXp78ZiOWQ1" target="_blank" rel="noopener">JOIN TELEGRAM NOW</a>
   <button id="tg-close" type="button">I've Joined / Continue</button>
 </div>
@@ -592,6 +599,7 @@ async function loadChannel(channel, pushHistory = true) {
   currentActiveChannel = channel;
   showStatus('Switching to ' + channel.channel_name + '...');
   
+  // Trigger VAR Chevron Wipe Transition Effect
   var varOverlay = document.getElementById('varChevronOverlay');
   if (varOverlay) {
     varOverlay.classList.remove('active');
@@ -606,10 +614,6 @@ async function loadChannel(channel, pushHistory = true) {
   var metaTitle = document.getElementById('currentChannelTitle');
   if (metaTitle) {
     metaTitle.textContent = channel.channel_name + ' · Live Broadcast';
-  }
-  var pageTitle = document.getElementById('pageMetaTitle');
-  if (pageTitle) {
-    pageTitle.textContent = "CricXCrate — " + channel.channel_name + " Live";
   }
 
   var clearKeysObj = {};
@@ -685,6 +689,7 @@ function renderChannelButtons(channelsList) {
       btn.classList.add('active');
     }
     
+    // Kick Impact Shockwave Ripple Effect on Click
     btn.onclick = function(e) {
       var rect = btn.getBoundingClientRect();
       var x = e.clientX - rect.left;
@@ -719,10 +724,9 @@ function initEventListeners() {
   var shareBtnText = document.getElementById("shareBtnText");
   btnShare.addEventListener("click", async function() {
     var shareableURL = window.location.href;
-    var channelName = currentActiveChannel ? currentActiveChannel.channel_name : "Live Stream";
     var shareData = {
-      title: "CRICXCRATE — " + channelName,
-      text: "Watch " + channelName + " live on CricXCrate!",
+      title: "CRICXCRATE — " + (currentActiveChannel ? currentActiveChannel.channel_name : "Live Stream"),
+      text: "Watch live football on CRICXCRATE!",
       url: shareableURL
     };
     try {
