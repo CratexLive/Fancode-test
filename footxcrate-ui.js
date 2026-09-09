@@ -1,61 +1,59 @@
 class FootXCrateUI extends HTMLElement {
-  #root;
-  #playerInstance = null;
-  #shakaInstance = null;
-  #engineStarted = false;
-  #audioCtx = null;
-  #animId = null;
-  #currentChannelIdx = 0;
-
-  #tntChannels = [
-    {
-      name: "TNT Sports 1 UK",
-      url: "https://otte.cache.aiv-cdn.net/bom-nitro/live/clients/dash/enc/rhf2dwosdt/out/v1/ee550d2a68d846c797e6ce4de2e8b76d/cenc.mpd",
-      keys: "69a5aa835a061ce64a630d1046727e40:d02feac8a999bd06bf4059bf33411749"
-    },
-    {
-      name: "TNT Sports 2 UK",
-      url: "https://otte.cache.aiv-cdn.net/bom-nitro/live/clients/dash/enc/puehlftk5j/out/v1/f7f0da1ee112481ca0024e6d4dd97f4a/cenc.mpd",
-      keys: "f3df7843080ae743bf865dc5fdf64c68:567c863bc12eb74788ea74888c042e1b"
-    },
-    {
-      name: "TNT Sports 3 UK",
-      url: "https://otte.cache.aiv-cdn.net/bom-nitro/live/clients/dash/enc/dev1hjwzh9/out/v1/a5f0ee7ad7b24906b14f43bebbbe4678/cenc.mpd",
-      keys: "cc91508324ce9dcaf425a43d58f1d9d4:643e5474d9edd87c7d9091c8c97994ca"
-    },
-    {
-      name: "TNT Sports 4 UK",
-      url: "https://otte.cache.aiv-cdn.net/bom-nitro/live/clients/dash/enc/tdijwiga2k/out/v1/f5fde318678f4f7583bf27b7231bde1f/cenc.mpd",
-      keys: "fa34fa8c90336dd528c7a23871cad1fe:552a78d1aeb74f1650d68255c5749408"
-    }
-  ];
-
   static get observedAttributes() {
     return ['telegram-link'];
   }
 
   constructor() {
     super();
-    this.#root = this.attachShadow({ mode: 'open' });
+    this._root = this.attachShadow({ mode: 'open' });
+    this._playerInstance = null;
+    this._shakaInstance = null;
+    this._engineStarted = false;
+    this._animId = null;
+    this._currentChannelIdx = 0;
+
+    this._tntChannels = [
+      {
+        name: "TNT Sports 1 UK",
+        url: "https://otte.cache.aiv-cdn.net/bom-nitro/live/clients/dash/enc/rhf2dwosdt/out/v1/ee550d2a68d846c797e6ce4de2e8b76d/cenc.mpd",
+        keys: "69a5aa835a061ce64a630d1046727e40:d02feac8a999bd06bf4059bf33411749"
+      },
+      {
+        name: "TNT Sports 2 UK",
+        url: "https://otte.cache.aiv-cdn.net/bom-nitro/live/clients/dash/enc/puehlftk5j/out/v1/f7f0da1ee112481ca0024e6d4dd97f4a/cenc.mpd",
+        keys: "f3df7843080ae743bf865dc5fdf64c68:567c863bc12eb74788ea74888c042e1b"
+      },
+      {
+        name: "TNT Sports 3 UK",
+        url: "https://otte.cache.aiv-cdn.net/bom-nitro/live/clients/dash/enc/dev1hjwzh9/out/v1/a5f0ee7ad7b24906b14f43bebbbe4678/cenc.mpd",
+        keys: "cc91508324ce9dcaf425a43d58f1d9d4:643e5474d9edd87c7d9091c8c97994ca"
+      },
+      {
+        name: "TNT Sports 4 UK",
+        url: "https://otte.cache.aiv-cdn.net/bom-nitro/live/clients/dash/enc/tdijwiga2k/out/v1/f5fde318678f4f7583bf27b7231bde1f/cenc.mpd",
+        keys: "fa34fa8c90336dd528c7a23871cad1fe:552a78d1aeb74f1650d68255c5749408"
+      }
+    ];
   }
 
   connectedCallback() {
-    this.#render();
-    requestAnimationFrame(() => {
-      this.#initWarpField();
-      this.#bindInteractions();
-      this.#runBootSequence();
-    });
+    this._render();
+    // Use a slight delay to ensure the DOM is painted before targeting elements
+    setTimeout(() => {
+      this._initWarpField();
+      this._bindInteractions();
+      this._runBootSequence();
+    }, 50);
   }
 
   disconnectedCallback() {
-    if (this.#animId) cancelAnimationFrame(this.#animId);
-    if (this.#playerInstance) this.#playerInstance.destroy();
-    if (this.#shakaInstance) this.#shakaInstance.destroy();
+    if (this._animId) cancelAnimationFrame(this._animId);
+    if (this._playerInstance) this._playerInstance.destroy();
+    if (this._shakaInstance) this._shakaInstance.destroy();
   }
 
-  #render() {
-    this.#root.innerHTML = `
+  _render() {
+    this._root.innerHTML = `
       <link rel="preconnect" href="https://fonts.googleapis.com">
       <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
       <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@600;700;800&family=Space+Grotesk:wght@600;700;800&family=Syne:wght@800;900&display=swap" rel="stylesheet">
@@ -91,19 +89,6 @@ class FootXCrateUI extends HTMLElement {
           color: var(--text-main);
           overflow-x: hidden;
           font-size: 15px;
-        }
-
-        :host([data-theme="light"]) {
-          --accent: #0044cc;
-          --bg-pure: #f2f5f9;
-          --bg-card: rgba(255, 255, 255, 0.95);
-          --border-glass: rgba(0, 85, 255, 0.15);
-          --text-pure: #000814;
-          --text-main: #00122e;
-          --text-muted: #526680;
-          --btn-main-bg: #00122e;
-          --btn-main-text: #ffffff;
-          --hud-bg: rgba(255, 255, 255, 0.92);
         }
 
         *, *::before, *::after {
@@ -187,15 +172,6 @@ class FootXCrateUI extends HTMLElement {
           background: radial-gradient(circle, var(--accent-glow-intense) 0%, transparent 75%);
           filter: blur(16px);
         }
-        .gyro-ring {
-          position: absolute;
-          inset: -6px;
-          border-radius: 50%;
-          border: 1.5px dashed rgba(var(--secondary-rgb), 0.5);
-          animation: spin 10s linear infinite;
-        }
-        @keyframes spin { 100% { transform: rotate(360deg); } }
-
         .gyro-inner-media {
           width: 100%;
           height: 100%;
@@ -498,8 +474,8 @@ class FootXCrateUI extends HTMLElement {
     `;
   }
 
-  #initWarpField() {
-    const canvas = this.#root.getElementById('warpGridCanvas');
+  _initWarpField() {
+    const canvas = this._root.getElementById('warpGridCanvas');
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     let width = (canvas.width = window.innerWidth);
@@ -532,15 +508,15 @@ class FootXCrateUI extends HTMLElement {
           s.y = Math.random() * height;
         }
       });
-      this.#animId = requestAnimationFrame(draw);
+      this._animId = requestAnimationFrame(draw);
     };
     draw();
   }
 
-  #runBootSequence() {
-    const bootScreen = this.#root.getElementById('appBootScreen');
-    const bootProgress = this.#root.getElementById('bootProgress');
-    const popup = this.#root.getElementById('tgPopup');
+  _runBootSequence() {
+    const bootScreen = this._root.getElementById('appBootScreen');
+    const bootProgress = this._root.getElementById('bootProgress');
+    const popup = this._root.getElementById('tgPopup');
 
     let pct = 0;
     const interval = setInterval(() => {
@@ -554,24 +530,24 @@ class FootXCrateUI extends HTMLElement {
           if (sessionStorage.getItem('crate_auth_pass') !== 'true') {
             if (popup) popup.classList.remove('hidden');
           } else {
-            this.#startStreamingEngine();
+            this._startStreamingEngine();
           }
         }, 400);
       }
     }, 250);
   }
 
-  #bindInteractions() {
+  _bindInteractions() {
     const tgUrl = 'https://t.me/+W6YlSdXBttFjOGM1';
-    const popup = this.#root.getElementById('tgPopup');
+    const popup = this._root.getElementById('tgPopup');
 
     const closePopup = () => {
       if (popup) popup.classList.add('hidden');
       sessionStorage.setItem('crate_auth_pass', 'true');
-      this.#startStreamingEngine();
+      this._startStreamingEngine();
     };
 
-    const joinBtn = this.#root.getElementById('tgJoinBtn');
+    const joinBtn = this._root.getElementById('tgJoinBtn');
     if (joinBtn) {
       joinBtn.addEventListener('click', () => {
         window.open(tgUrl, '_blank');
@@ -579,31 +555,31 @@ class FootXCrateUI extends HTMLElement {
       });
     }
 
-    const dismissBtn = this.#root.getElementById('tgCloseBtn');
+    const dismissBtn = this._root.getElementById('tgCloseBtn');
     if (dismissBtn) {
       dismissBtn.addEventListener('click', closePopup);
     }
 
-    const channelButtons = this.#root.querySelectorAll('.channel-btn');
+    const channelButtons = this._root.querySelectorAll('.channel-btn');
     channelButtons.forEach(btn => {
       btn.addEventListener('click', e => {
         channelButtons.forEach(b => b.classList.remove('active'));
         e.currentTarget.classList.add('active');
 
-        this.#currentChannelIdx = parseInt(e.currentTarget.getAttribute('data-idx'), 10);
-        const channel = this.#tntChannels[this.#currentChannelIdx];
+        this._currentChannelIdx = parseInt(e.currentTarget.getAttribute('data-idx'), 10);
+        const channel = this._tntChannels[this._currentChannelIdx];
 
-        const hudText = this.#root.getElementById('hudChannelText');
+        const hudText = this._root.getElementById('hudChannelText');
         if (hudText) hudText.textContent = channel.name;
 
-        this.#reloadStream();
+        this._reloadStream();
       });
     });
   }
 
-  async #startStreamingEngine() {
-    if (this.#engineStarted) return;
-    this.#engineStarted = true;
+  async _startStreamingEngine() {
+    if (this._engineStarted) return;
+    this._engineStarted = true;
 
     try {
       if (!window.shaka) return;
@@ -611,14 +587,14 @@ class FootXCrateUI extends HTMLElement {
 
       if (!window.shaka.Player.isBrowserSupported()) return;
 
-      const video = this.#root.getElementById('player');
+      const video = this._root.getElementById('player');
       video.muted = true;
       video.autoplay = true;
 
       const player = new window.shaka.Player(video);
-      this.#shakaInstance = player;
+      this._shakaInstance = player;
 
-      const current = this.#tntChannels[this.#currentChannelIdx];
+      const current = this._tntChannels[this._currentChannelIdx];
       const [keyId, keyVal] = current.keys.split(':');
 
       player.configure({
@@ -635,29 +611,30 @@ class FootXCrateUI extends HTMLElement {
       await video.play().catch(() => {});
 
       if (window.Plyr) {
-        this.#playerInstance = new window.Plyr(video, {
+        this._playerInstance = new window.Plyr(video, {
           autoplay: true,
           muted: true
         });
       }
     } catch (e) {
-      this.#engineStarted = false;
+      this._engineStarted = false;
+      console.error(e);
     }
   }
 
-  async #reloadStream() {
-    if (!this.#shakaInstance) return;
-    const current = this.#tntChannels[this.#currentChannelIdx];
+  async _reloadStream() {
+    if (!this._shakaInstance) return;
+    const current = this._tntChannels[this._currentChannelIdx];
     const [keyId, keyVal] = current.keys.split(':');
 
     try {
-      this.#shakaInstance.configure({
+      this._shakaInstance.configure({
         drm: {
           clearKeys: { [keyId]: keyVal }
         }
       });
-      await this.#shakaInstance.load(current.url);
-      const video = this.#root.getElementById('player');
+      await this._shakaInstance.load(current.url);
+      const video = this._root.getElementById('player');
       if (video) await video.play().catch(() => {});
     } catch (e) {}
   }
