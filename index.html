@@ -3,36 +3,88 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=5,user-scalable=yes,viewport-fit=cover">
-  <meta name="theme-color" content="#030712">
-  <meta name="color-scheme" content="dark light">
+  <meta name="theme-color" content="#020612">
   <meta name="referrer" content="no-referrer">
-  <title>FootxCrate — UEFA Champions League Live | TNT Sports 2</title>
+  <title>FootxCrate — UEFA Champions League Live</title>
 
-  <!-- Player Dependencies in Global Scope -->
+  <!-- Player Dependencies -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.7.11/shaka-player.compiled.js" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/plyr@3.7.8/dist/plyr.polyfilled.js"></script>
 
-  <!-- FootxCrate Web Component -->
+  <!-- FootxCrate UI Component -->
   <script src="footxcrate-ui.js" defer></script>
+
   <style>
     html, body {
       margin: 0;
       padding: 0;
       width: 100%;
       height: 100%;
-      background: #030712;
+      background: #020612;
       overflow-x: hidden;
     }
   </style>
 </head>
 <body>
 
-  <footxcrate-ui 
-    stream-url="https://otte.cache.aiv-cdn.net/bom-nitro/live/clients/dash/enc/puehlftk5j/out/v1/f7f0da1ee112481ca0024e6d4dd97f4a/cenc.mpd"
-    clearkey-id="f3df7843080ae743bf865dc5fdf64c68"
-    clearkey-val="567c863bc12eb74788ea74888c042e1b"
-    telegram-link="https://t.me/+td-BEF1c2B1kMjk1">
-  </footxcrate-ui>
+  <!-- FootxCrate App -->
+  <footxcrate-ui id="footxApp" telegram-link="https://t.me/+td-BEF1c2B1kMjk1"></footxcrate-ui>
+
+  <script>
+    const tntChannels = [
+      {
+        "channel_name": "TNT Sports 1 UK",
+        "channel_logo": "https://raw.githubusercontent.com/tv-logo/tv-logos/refs/heads/main/countries/united-kingdom/tnt-sports-1-uk.png",
+        "streams": [
+          {
+            "source_name": "TNT Sports 1",
+            "stream_url": "https://otte.cache.aiv-cdn.net/bom-nitro/live/clients/dash/enc/rhf2dwosdt/out/v1/ee550d2a68d846c797e6ce4de2e8b76d/cenc.mpd",
+            "stream_keys": "69a5aa835a061ce64a630d1046727e40:d02feac8a999bd06bf4059bf33411749"
+          }
+        ]
+      },
+      {
+        "channel_name": "TNT Sports 2 UK",
+        "channel_logo": "https://raw.githubusercontent.com/tv-logo/tv-logos/refs/heads/main/countries/united-kingdom/tnt-sports-2-uk.png",
+        "streams": [
+          {
+            "source_name": "TNT Sports 2",
+            "stream_url": "https://otte.cache.aiv-cdn.net/bom-nitro/live/clients/dash/enc/puehlftk5j/out/v1/f7f0da1ee112481ca0024e6d4dd97f4a/cenc.mpd",
+            "stream_keys": "f3df7843080ae743bf865dc5fdf64c68:567c863bc12eb74788ea74888c042e1b"
+          }
+        ]
+      },
+      {
+        "channel_name": "TNT Sports 3 UK",
+        "channel_logo": "https://raw.githubusercontent.com/tv-logo/tv-logos/refs/heads/main/countries/united-kingdom/tnt-sports-3-uk.png",
+        "streams": [
+          {
+            "source_name": "TNT Sports 3",
+            "stream_url": "https://otte.cache.aiv-cdn.net/bom-nitro/live/clients/dash/enc/dev1hjwzh9/out/v1/a5f0ee7ad7b24906b14f43bebbbe4678/cenc.mpd",
+            "stream_keys": "cc91508324ce9dcaf425a43d58f1d9d4:643e5474d9edd87c7d9091c8c97994ca"
+          }
+        ]
+      },
+      {
+        "channel_name": "TNT Sports 4 UK",
+        "channel_logo": "https://raw.githubusercontent.com/tv-logo/tv-logos/refs/heads/main/countries/united-kingdom/tnt-sports-4-uk.png",
+        "streams": [
+          {
+            "source_name": "TNT Sports 4",
+            "stream_url": "https://otte.cache.aiv-cdn.net/bom-nitro/live/clients/dash/enc/tdijwiga2k/out/v1/f5fde318678f4f7583bf27b7231bde1f/cenc.mpd",
+            "stream_keys": "fa34fa8c90336dd528c7a23871cad1fe:552a78d1aeb74f1650d68255c5749408"
+          }
+        ]
+      }
+    ];
+
+    document.addEventListener("DOMContentLoaded", () => {
+      customElements.whenDefined('footxcrate-ui').then(() => {
+        const app = document.getElementById('footxApp');
+        app.loadChannels(tntChannels);
+      });
+    });
+  </script>
 
 </body>
 </html>
