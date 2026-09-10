@@ -228,7 +228,7 @@
           .tg-modal-icon svg { width: 34px; height: 34px; fill: var(--accent); }
           #tg-popup h3 { font-family: 'Space Grotesk', sans-serif; font-size: clamp(20px, 2.5vw, 24px); font-weight: 800; color: #fff; margin-bottom: 8px; text-transform: uppercase; }
           #tg-popup p { font-size: clamp(13px, 1.1vw, 15px); color: var(--text-main); line-height: 1.5; margin-bottom: 24px; font-weight: 600; }
-          #tg-join { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; height: 52px; border-radius: 100px; background: linear-gradient(135deg, #00ffcc 0%, #0096ff 100%); color: #000; font-family: 'Space Grotesk', sans-serif; font-size: 15px; font-weight: 900; text-transform: uppercase; letter-spacing: 1.5px; text-decoration: none; transition: all 0.3s ease; box-shadow: 0 10px 30px rgba(0, 255, 204, 0.3); cursor: pointer; margin-bottom: 12px; }
+          #tg-join { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; height: 52px; border-radius: 100px; background: linear-gradient(135deg, #00ffcc 0%, #0096ff 100%); color: #000; font-family: 'Space Grotesk', sans-serif; font-size: 15px; font-weight: 900; text-transform: uppercase; letter-spacing: 1.5px; text-decoration: none; transition: all 0.3s ease; box-shadow: 0 10px 30px rgba(0, 255, 204, 0.3); cursor: margin-bottom: 12px; }
           #tg-close { background: transparent; border: 1px solid var(--border-glass-bright); color: var(--text-muted); font-family: 'Space Grotesk', sans-serif; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; padding: 10px 20px; border-radius: 100px; cursor: pointer; transition: all 0.3s ease; }
           #status { position: fixed; left: 16px; bottom: 16px; z-index: 1000; color: #fff; background: rgba(5, 10, 15, 0.85); border: 1px solid rgba(0, 255, 204, 0.3); border-radius: 10px; padding: 10px 16px; font-size: 12px; backdrop-filter: blur(10px); }
           #status:empty { display: none; }
@@ -348,8 +348,8 @@
 
       this.plyrInstance = new Plyr(videoEl, {
         autoplay: true,
-        loadSprite: false,  // Do not fetch plyr.svg into external DOM
-        iconUrl: '',        // Tell Plyr icons exist locally inside this Shadow DOM
+        loadSprite: false, 
+        iconUrl: '',       
         controls: [
           'play-large', 'play', 'progress', 'current-time', 
           'mute', 'volume', 'captions', 'settings', 'pip', 'fullscreen'
@@ -402,6 +402,12 @@
     async loadChannel(channel) {
       this.currentActiveChannel = channel;
       this.showStatus('Switching to ' + channel.channel_name + '...');
+
+      // **URL Update Logic:** Push the ?ch= param to the address bar without reloading
+      if (window.history && window.history.pushState) {
+        const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?ch=' + channel.id;
+        window.history.pushState({ path: newUrl }, '', newUrl);
+      }
 
       const heroHeading = this._shadow.querySelector('#heroHeadlineText');
       if (heroHeading) heroHeading.innerHTML = channel.channel_name.toUpperCase() + ' <br><span class="accent-txt">LIVE STREAM.</span>';
@@ -483,12 +489,21 @@
       const btnShare = this._shadow.querySelector("#btnShare");
       const shareBtnText = this._shadow.querySelector("#shareBtnText");
       btnShare.addEventListener("click", async () => {
-        const shareText = "Live Match Feed\n" + window.location.href;
+        // **Dynamic Share Formatting:** Recreates the exact format you requested.
+        const channelName = this.currentActiveChannel ? this.currentActiveChannel.channel_name : "Live Match";
+        const shareUrl = window.location.href; // Uses the updated browser URL
+        
+        const formattedShareText = `Watch ${channelName} live on CRICXCRATE! ${shareUrl}`;
+
         try {
           if (navigator.share && /mobile|android|iphone|ipad|tablet/i.test(navigator.userAgent)) {
-            await navigator.share({ title: "CRICXCRATE", text: shareText, url: window.location.href });
+            await navigator.share({ 
+              title: "CRICXCRATE", 
+              text: `Watch ${channelName} live on CRICXCRATE!`, 
+              url: shareUrl 
+            });
           } else if (navigator.clipboard) {
-            await navigator.clipboard.writeText(shareText);
+            await navigator.clipboard.writeText(formattedShareText);
             const originalText = shareBtnText.textContent;
             shareBtnText.textContent = "LINK COPIED!";
             setTimeout(() => shareBtnText.textContent = originalText, 1800);
