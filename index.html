@@ -7,15 +7,17 @@
   <title>CricXCrate Live - Football Arena Pro</title>
 
   <!-- Shaka Player Core -->
-  <script src="https://cdn.jsdelivr.net/npm/shaka-player@latest/dist/shaka-player.ui.js" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.7.11/shaka-player.compiled.js"></script>
 
-  <!-- Setup -->
+  <!-- Plyr JS -->
+  <script src="https://cdn.jsdelivr.net/npm/plyr@3.7.8/dist/plyr.polyfilled.js"></script>
+
+  <!-- Config & Component -->
   <script src="config.js"></script>
   <script src="cricxcrate-ui.js" defer></script>
 </head>
 <body style="margin: 0; padding: 0; background: #050a0f;">
 
-  <!-- Update this if you have a special stream today, otherwise leave it empty or remove the attribute -->
   <cricxcrate-ui stream-url="YOUR_VIDEO_LINK_HERE"></cricxcrate-ui>
 
 </body>
