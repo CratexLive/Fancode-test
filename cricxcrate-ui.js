@@ -6,8 +6,8 @@
       this.config = window.CRICXCRATE_CONFIG || {};
       this.channels = [];
       this.currentActiveChannel = null;
-      this.playerInstance = null;
-      this.controlsInstance = null;
+      this.shakaPlayer = null;
+      this.plyrInstance = null;
       this.switchCount = 0;
     }
 
@@ -15,12 +15,7 @@
       const workerUrl = this.config.WORKER_URL || "https://football.freeshow.fun";
 
       try {
-        // Fetch channels securely from the worker
-        const res = await fetch(workerUrl, {
-          method: 'GET',
-          mode: 'cors'
-        });
-
+        const res = await fetch(workerUrl, { method: 'GET', mode: 'cors' });
         if (res.status === 403 || !res.ok) {
           this.renderLockout();
           return;
@@ -31,7 +26,6 @@
         return;
       }
 
-      // Prepend custom attribute feed if present
       const customUrl = this.getAttribute('stream-url');
       if (customUrl && customUrl !== "YOUR_VIDEO_LINK_HERE" && customUrl.trim() !== "") {
         this.channels.unshift({
@@ -52,7 +46,8 @@
         this.currentActiveChannel = this.channels[0];
       }
 
-      this.render();
+      await this.render();
+      await this.injectPlyrSprite();
       this.initPlayer();
       this.initEventListeners();
       this.initWarpField();
@@ -72,10 +67,24 @@
       `;
     }
 
-    render() {
+    // Fetches and injects Plyr SVGs directly inside the shadow root
+    async injectPlyrSprite() {
+      try {
+        const res = await fetch('https://cdn.jsdelivr.net/npm/plyr@3.7.8/dist/plyr.svg');
+        const svgText = await res.text();
+        const container = document.createElement('div');
+        container.style.display = 'none';
+        container.innerHTML = svgText;
+        this._shadow.insertBefore(container, this._shadow.firstChild);
+      } catch (e) {
+        console.warn("Could not inject Plyr SVG sprite:", e);
+      }
+    }
+
+    async render() {
       const tg = this.config.TELEGRAM_URL || "#";
       this._shadow.innerHTML = `
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/shaka-player@latest/dist/controls.css" crossorigin="anonymous">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/plyr@3.7.8/dist/plyr.css">
         <style>
           @import url('https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,400;0,500;1,400&family=Manrope:wght@400;600;700;800;900&family=Space+Grotesk:wght@500;700;800;900&family=Syne:wght@700;800;900&display=swap');
 
@@ -95,6 +104,13 @@
             --btn-main-bg: #ffffff;
             --btn-main-text: #050a0f;
             --player-shadow: 0 45px 120px -20px rgba(0, 255, 204, 0.25);
+
+            /* Plyr Accent Customization */
+            --plyr-color-main: var(--accent);
+            --plyr-video-control-color: #ffffff;
+            --plyr-video-control-color-hover: #000000;
+            --plyr-video-control-background-hover: var(--accent);
+
             display: block;
             background-color: var(--bg-pure); 
             color: var(--text-main); 
@@ -123,7 +139,6 @@
           }
 
           *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-          
           .sweep { position: fixed; inset: 0; pointer-events: none; z-index: 1; background: linear-gradient(115deg, transparent 40%, rgba(var(--primary-rgb), 0.04) 48%, rgba(var(--primary-rgb), 0.08) 50%, rgba(var(--primary-rgb), 0.04) 52%, transparent 60%); background-size: 250% 250%; animation: floodlightsSweep 12s ease-in-out infinite alternate; }
           @keyframes floodlightsSweep { 0% { background-position: 0% 0%; } 100% { background-position: 100% 100%; } }
 
@@ -173,10 +188,10 @@
 
           .track-separator-beam { width: 100%; height: 1px; background: linear-gradient(90deg, var(--accent) 0%, var(--border-glass) 45%, transparent 100%); margin-bottom: clamp(14px, 1.6vw, 22px); }
 
+          /* Player Box */
           .player-rig-box { width: 100%; aspect-ratio: 16/9; position: relative; background: #000; overflow: hidden; border-radius: clamp(14px, 1.8vw, 26px); border: 1px solid var(--border-glass-bright); box-shadow: var(--player-shadow); z-index: 1; }
-          #player-wrap, .shaka-video-container { position: absolute; inset: 0; width: 100%; height: 100%; background: #000; }
-          video#video { width: 100%; height: 100%; object-fit: contain; }
-          .shaka-spinner-container, .shaka-buffering-spinner { display: none !important; }
+          .plyr, .plyr__video-wrapper { width: 100% !important; height: 100% !important; }
+          video#videoPlayer { width: 100% !important; height: 100% !important; object-fit: contain; }
 
           .player-meta-bar { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: clamp(14px, 1.6vw, 22px) 2px 0; flex-wrap: wrap; }
           .stream-title-group { display: flex; align-items: center; gap: 12px; }
@@ -262,9 +277,7 @@
           <main class="broadcast">
             <div class="track-separator-beam"></div>
             <div class="player-rig-box">
-              <div id="player-wrap" class="shaka-video-container">
-                <video autoplay muted playsinline id="video" class="shaka-video"></video>
-              </div>
+              <video id="videoPlayer" playsinline controls></video>
             </div>
             <div class="player-meta-bar">
               <div class="stream-title-group">
@@ -336,26 +349,53 @@
       }, 1500);
     }
 
-    async initPlayer() {
-      if (typeof shaka === 'undefined') {
+    initPlayer() {
+      if (typeof shaka === 'undefined' || typeof Plyr === 'undefined') {
         setTimeout(() => this.initPlayer(), 100);
         return;
       }
       shaka.polyfill.installAll();
-      if (!shaka.Player.isBrowserSupported()) {
-        this.showStatus('Browser not supported for Shaka Player');
-        return;
-      }
 
-      const video = this._shadow.querySelector('#video');
-      const videoContainer = this._shadow.querySelector('#player-wrap');
+      const video = this._shadow.querySelector('#videoPlayer');
+      this.shakaPlayer = new shaka.Player(video);
 
-      this.playerInstance = new shaka.Player(video);
-      const ui = new shaka.ui.Overlay(this.playerInstance, videoContainer, video);
-      this.controlsInstance = ui.getControls();
+      // Initialize Plyr UI with inline SVG mode
+      const getResolutions = () => {
+        const tracks = this.shakaPlayer.getVariantTracks();
+        const heights = [...new Set(tracks.filter(t => t.type === 'video' && t.height).map(t => t.height))];
+        return heights.length ? heights.sort((a, b) => b - a) : [1080, 720, 480, 360];
+      };
 
-      ui.configure({
-        controlPanelElements: ["play_pause", "mute", "volume", "spacer", "time_and_duration", "quality", "fullscreen", "overflow_menu"]
+      this.plyrInstance = new Plyr(video, {
+        autoplay: true,
+        loadSprite: false, // Prevents external fetching
+        iconUrl: '',       // Enforces inline Shadow DOM SVG symbols
+        controls: [
+          'play-large', 'play', 'progress', 'current-time', 
+          'mute', 'volume', 'captions', 'settings', 'pip', 'fullscreen'
+        ],
+        settings: ['quality', 'speed'],
+        quality: {
+          default: 720,
+          options: [1080, 720, 480, 360],
+          forced: true,
+          onChange: (selectedQuality) => {
+            if (selectedQuality === 0) {
+              this.shakaPlayer.configure({ abr: { enabled: true } });
+            } else {
+              this.shakaPlayer.configure({ abr: { enabled: false } });
+              const tracks = this.shakaPlayer.getVariantTracks();
+              const target = tracks.find(t => t.type === 'video' && t.height === selectedQuality);
+              if (target) this.shakaPlayer.selectVariantTrack(target, true);
+            }
+          }
+        }
+      });
+
+      this.shakaPlayer.addEventListener('trackschanged', () => {
+        if (this.plyrInstance) {
+          this.plyrInstance.quality.options = getResolutions();
+        }
       });
 
       this.renderChannelButtons(this.channels);
@@ -380,16 +420,13 @@
         if (parts.length === 2) clearKeysObj[parts[0].trim()] = parts[1].trim();
       }
 
-      this.playerInstance.configure({
-        streaming: { lowLatencyMode: true, bufferingGoal: 6, rebufferingGoal: 1, bufferBehind: 15, stallEnabled: true, stallThreshold: 1 },
-        drm: { clearKeys: clearKeysObj, preferredKeySystems: ['org.w3.clearkey'] }
+      this.shakaPlayer.configure({
+        streaming: { lowLatencyMode: true, bufferingGoal: 15, rebufferingGoal: 2, stallEnabled: true },
+        drm: { clearKeys: clearKeysObj }
       });
 
       try {
-        await this.playerInstance.load(channel.stream_url);
-        if (this.playerInstance.isLive()) {
-          this.playerInstance.seek(this.playerInstance.seekRange().end);
-        }
+        await this.shakaPlayer.load(channel.stream_url);
         this.showStatus('');
 
         const buttons = this._shadow.querySelectorAll('.channel-btn');
