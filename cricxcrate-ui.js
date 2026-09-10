@@ -46,8 +46,8 @@
         this.currentActiveChannel = this.channels[0];
       }
 
-      await this.render();
-      await this.injectPlyrSprite();
+      this.render();
+      await this.embedPlyrSprite();
       this.initPlayer();
       this.initEventListeners();
       this.initWarpField();
@@ -67,21 +67,18 @@
       `;
     }
 
-    // Fetches and injects Plyr SVGs directly inside the shadow root
-    async injectPlyrSprite() {
+    async embedPlyrSprite() {
       try {
         const res = await fetch('https://cdn.jsdelivr.net/npm/plyr@3.7.8/dist/plyr.svg');
         const svgText = await res.text();
-        const container = document.createElement('div');
-        container.style.display = 'none';
-        container.innerHTML = svgText;
-        this._shadow.insertBefore(container, this._shadow.firstChild);
+        const container = this._shadow.querySelector('#plyr-sprite-container');
+        if (container) container.innerHTML = svgText;
       } catch (e) {
-        console.warn("Could not inject Plyr SVG sprite:", e);
+        console.error("Failed to load Plyr icons", e);
       }
     }
 
-    async render() {
+    render() {
       const tg = this.config.TELEGRAM_URL || "#";
       this._shadow.innerHTML = `
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/plyr@3.7.8/dist/plyr.css">
@@ -105,11 +102,11 @@
             --btn-main-text: #050a0f;
             --player-shadow: 0 45px 120px -20px rgba(0, 255, 204, 0.25);
 
-            /* Plyr Accent Customization */
+            /* Plyr Theme Overrides */
             --plyr-color-main: var(--accent);
-            --plyr-video-control-color: #ffffff;
-            --plyr-video-control-color-hover: #000000;
-            --plyr-video-control-background-hover: var(--accent);
+            --plyr-video-background: #000;
+            --plyr-video-controls-background: linear-gradient(180deg, transparent, rgba(0, 0, 0, 0.85));
+            --plyr-control-icon-size: 18px;
 
             display: block;
             background-color: var(--bg-pure); 
@@ -188,10 +185,9 @@
 
           .track-separator-beam { width: 100%; height: 1px; background: linear-gradient(90deg, var(--accent) 0%, var(--border-glass) 45%, transparent 100%); margin-bottom: clamp(14px, 1.6vw, 22px); }
 
-          /* Player Box */
           .player-rig-box { width: 100%; aspect-ratio: 16/9; position: relative; background: #000; overflow: hidden; border-radius: clamp(14px, 1.8vw, 26px); border: 1px solid var(--border-glass-bright); box-shadow: var(--player-shadow); z-index: 1; }
-          .plyr, .plyr__video-wrapper { width: 100% !important; height: 100% !important; }
-          video#videoPlayer { width: 100% !important; height: 100% !important; object-fit: contain; }
+          .plyr { width: 100%; height: 100%; }
+          video { width: 100%; height: 100%; object-fit: contain; }
 
           .player-meta-bar { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: clamp(14px, 1.6vw, 22px) 2px 0; flex-wrap: wrap; }
           .stream-title-group { display: flex; align-items: center; gap: 12px; }
@@ -206,7 +202,7 @@
           .stream-text-details span { font-family: 'Space Grotesk', sans-serif; color: var(--text-muted); font-size: clamp(9px, 0.75vw, 11px); letter-spacing: 1.2px; font-weight: 600; text-transform: uppercase; }
 
           .share-action-btn { height: clamp(38px, 3.2vw, 46px); padding: 0 clamp(18px, 1.8vw, 26px); display: inline-flex; align-items: center; gap: 8px; border-radius: 100px; background: linear-gradient(135deg, var(--bg-card) 0%, rgba(var(--primary-rgb), 0.16) 100%); border: 1px solid var(--accent); color: var(--text-main); font-family: 'Space Grotesk', sans-serif; font-size: clamp(9px, 0.75vw, 11px); font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; cursor: pointer; backdrop-filter: blur(16px); box-shadow: 0 6px 25px var(--accent-glow); transition: all 0.3s ease; }
-          .share-action-btn svg { width: 14px; height: 14px; stroke: var(--accent); stroke-width: 2.2; transition: stroke 0.3s ease; }
+          .share-action-btn svg { width: 14px; height: 14px; stroke: var(--accent); stroke-width: 2.2; }
           .share-action-btn:hover { background: var(--accent); color: #000; box-shadow: 0 10px 30px var(--accent-glow-intense); transform: translateY(-2px); }
           .share-action-btn:hover svg { stroke: #000; }
 
@@ -222,9 +218,9 @@
           .footer { margin-top: clamp(44px, 6vw, 80px); border-top: 1px solid var(--border-glass); padding: 20px 0 calc(20px + env(safe-area-inset-bottom)); display: flex; align-items: center; justify-content: space-between; color: var(--text-dark); font-family: 'Space Grotesk', sans-serif; font-size: clamp(8.5px, 0.7vw, 10.5px); letter-spacing: 1.2px; text-transform: uppercase; font-weight: 600; }
           .footer strong { color: var(--text-muted); }
 
-          #tg-overlay { position: fixed; inset: 0; z-index: 99998; background: rgba(2, 6, 12, 0.85); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); opacity: 0; pointer-events: none; transition: opacity 1s cubic-bezier(0.16, 1, 0.3, 1); }
+          #tg-overlay { position: fixed; inset: 0; z-index: 99998; background: rgba(2, 6, 12, 0.85); backdrop-filter: blur(16px); opacity: 0; pointer-events: none; transition: opacity 1s cubic-bezier(0.16, 1, 0.3, 1); }
           #tg-overlay.show { opacity: 1; pointer-events: all; }
-          #tg-popup { position: fixed; left: 50%; top: 50%; z-index: 99999; width: min(420px, 90vw); background: var(--bg-card); border: 1px solid var(--border-glass-bright); border-radius: 28px; padding: clamp(28px, 4.5vw, 40px); color: var(--text-main); text-align: center; box-shadow: 0 40px 100px rgba(0,0,0,0.85), 0 0 30px rgba(0,255,204,0.2); transform: translate(-50%, -46%) scale(0.92); opacity: 0; pointer-events: none; transition: opacity 1s cubic-bezier(0.16, 1, 0.3, 1), transform 1s cubic-bezier(0.16, 1, 0.3, 1); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); }
+          #tg-popup { position: fixed; left: 50%; top: 50%; z-index: 99999; width: min(420px, 90vw); background: var(--bg-card); border: 1px solid var(--border-glass-bright); border-radius: 28px; padding: clamp(28px, 4.5vw, 40px); color: var(--text-main); text-align: center; box-shadow: 0 40px 100px rgba(0,0,0,0.85), 0 0 30px rgba(0,255,204,0.2); transform: translate(-50%, -46%) scale(0.92); opacity: 0; pointer-events: none; transition: opacity 1s cubic-bezier(0.16, 1, 0.3, 1), transform 1s cubic-bezier(0.16, 1, 0.3, 1); backdrop-filter: blur(24px); }
           #tg-popup.show { opacity: 1; pointer-events: all; transform: translate(-50%, -50%) scale(1); }
           #tg-popup.hiding { opacity: 0 !important; pointer-events: none !important; transform: translate(-50%, -54%) scale(0.9) !important; transition: opacity 1.5s cubic-bezier(0.16, 1, 0.3, 1), transform 1.5s cubic-bezier(0.16, 1, 0.3, 1) !important; }
           #tg-overlay.hiding { opacity: 0 !important; pointer-events: none !important; transition: opacity 1.5s cubic-bezier(0.16, 1, 0.3, 1) !important; }
@@ -233,21 +229,12 @@
           #tg-popup h3 { font-family: 'Space Grotesk', sans-serif; font-size: clamp(20px, 2.5vw, 24px); font-weight: 800; color: #fff; margin-bottom: 8px; text-transform: uppercase; }
           #tg-popup p { font-size: clamp(13px, 1.1vw, 15px); color: var(--text-main); line-height: 1.5; margin-bottom: 24px; font-weight: 600; }
           #tg-join { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; height: 52px; border-radius: 100px; background: linear-gradient(135deg, #00ffcc 0%, #0096ff 100%); color: #000; font-family: 'Space Grotesk', sans-serif; font-size: 15px; font-weight: 900; text-transform: uppercase; letter-spacing: 1.5px; text-decoration: none; transition: all 0.3s ease; box-shadow: 0 10px 30px rgba(0, 255, 204, 0.3); cursor: pointer; margin-bottom: 12px; }
-          #tg-join:hover { transform: translateY(-2px); box-shadow: 0 15px 40px rgba(0, 255, 204, 0.5); filter: brightness(1.1); }
           #tg-close { background: transparent; border: 1px solid var(--border-glass-bright); color: var(--text-muted); font-family: 'Space Grotesk', sans-serif; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; padding: 10px 20px; border-radius: 100px; cursor: pointer; transition: all 0.3s ease; }
-          #tg-close:hover { border-color: var(--accent); color: var(--text-main); }
           #status { position: fixed; left: 16px; bottom: 16px; z-index: 1000; color: #fff; background: rgba(5, 10, 15, 0.85); border: 1px solid rgba(0, 255, 204, 0.3); border-radius: 10px; padding: 10px 16px; font-size: 12px; backdrop-filter: blur(10px); }
           #status:empty { display: none; }
-
-          @media (max-width: 680px) {
-            .live-pill-badge { display: none; }
-            .community-body { grid-template-columns: 1fr; gap: 18px; }
-            .comm-btn-prime { width: 100%; justify-content: center; }
-            .player-meta-bar { flex-direction: column; align-items: flex-start; }
-            .share-action-btn { width: 100%; justify-content: center; }
-          }
         </style>
 
+        <div id="plyr-sprite-container" style="display: none;"></div>
         <div class="sweep"></div>
         <canvas id="warpGridCanvas"></canvas>
 
@@ -349,27 +336,20 @@
       }, 1500);
     }
 
-    initPlayer() {
-      if (typeof shaka === 'undefined' || typeof Plyr === 'undefined') {
-        setTimeout(() => this.initPlayer(), 100);
-        return;
-      }
-      shaka.polyfill.installAll();
+    setupPlyrControls(videoEl) {
+      if (this.plyrInstance) return;
 
-      const video = this._shadow.querySelector('#videoPlayer');
-      this.shakaPlayer = new shaka.Player(video);
-
-      // Initialize Plyr UI with inline SVG mode
-      const getResolutions = () => {
+      const getAvailableResolutions = () => {
+        if (!this.shakaPlayer) return [1080, 720, 480, 360];
         const tracks = this.shakaPlayer.getVariantTracks();
         const heights = [...new Set(tracks.filter(t => t.type === 'video' && t.height).map(t => t.height))];
         return heights.length ? heights.sort((a, b) => b - a) : [1080, 720, 480, 360];
       };
 
-      this.plyrInstance = new Plyr(video, {
+      this.plyrInstance = new Plyr(videoEl, {
         autoplay: true,
-        loadSprite: false, // Prevents external fetching
-        iconUrl: '',       // Enforces inline Shadow DOM SVG symbols
+        loadSprite: false,  // Do not fetch plyr.svg into external DOM
+        iconUrl: '',        // Tell Plyr icons exist locally inside this Shadow DOM
         controls: [
           'play-large', 'play', 'progress', 'current-time', 
           'mute', 'volume', 'captions', 'settings', 'pip', 'fullscreen'
@@ -377,7 +357,7 @@
         settings: ['quality', 'speed'],
         quality: {
           default: 720,
-          options: [1080, 720, 480, 360],
+          options: getAvailableResolutions(),
           forced: true,
           onChange: (selectedQuality) => {
             if (selectedQuality === 0) {
@@ -394,9 +374,24 @@
 
       this.shakaPlayer.addEventListener('trackschanged', () => {
         if (this.plyrInstance) {
-          this.plyrInstance.quality.options = getResolutions();
+          this.plyrInstance.quality.options = getAvailableResolutions();
         }
       });
+    }
+
+    async initPlayer() {
+      if (typeof shaka === 'undefined' || typeof Plyr === 'undefined') {
+        setTimeout(() => this.initPlayer(), 100);
+        return;
+      }
+      shaka.polyfill.installAll();
+      if (!shaka.Player.isBrowserSupported()) {
+        this.showStatus('Browser not supported for playback');
+        return;
+      }
+
+      const video = this._shadow.querySelector('#videoPlayer');
+      this.shakaPlayer = new shaka.Player(video);
 
       this.renderChannelButtons(this.channels);
       if (this.currentActiveChannel) {
@@ -414,19 +409,25 @@
       const metaTitle = this._shadow.querySelector('#currentChannelTitle');
       if (metaTitle) metaTitle.textContent = channel.channel_name + ' · Live Broadcast';
 
-      const clearKeysObj = {};
+      const playerConfig = {
+        streaming: { lowLatencyMode: true, bufferingGoal: 15, rebufferingGoal: 2, stallEnabled: true }
+      };
+
       if (channel.stream_keys) {
         const parts = channel.stream_keys.split(':');
-        if (parts.length === 2) clearKeysObj[parts[0].trim()] = parts[1].trim();
+        if (parts.length === 2) {
+          playerConfig.drm = {
+            clearKeys: { [parts[0].trim()]: parts[1].trim() }
+          };
+        }
       }
 
-      this.shakaPlayer.configure({
-        streaming: { lowLatencyMode: true, bufferingGoal: 15, rebufferingGoal: 2, stallEnabled: true },
-        drm: { clearKeys: clearKeysObj }
-      });
+      this.shakaPlayer.configure(playerConfig);
 
       try {
         await this.shakaPlayer.load(channel.stream_url);
+        const video = this._shadow.querySelector('#videoPlayer');
+        this.setupPlyrControls(video);
         this.showStatus('');
 
         const buttons = this._shadow.querySelectorAll('.channel-btn');
@@ -438,6 +439,7 @@
         this.switchCount++;
         if (this.switchCount % 10 === 0) this.initPopup();
       } catch (e) {
+        console.error("Playback load error:", e);
         this.showStatus('');
       }
     }
