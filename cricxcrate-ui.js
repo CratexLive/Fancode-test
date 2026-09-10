@@ -29,22 +29,14 @@
       const customUrl = this.getAttribute('stream-url');
       if (customUrl && customUrl !== "YOUR_VIDEO_LINK_HERE" && customUrl.trim() !== "") {
         this.channels.unshift({
-          id: "custom_feed",
+          id: "main_event",
           channel_name: "Main Match Event",
           stream_url: customUrl.trim(),
           stream_keys: ""
         });
       }
 
-      const urlParams = new URLSearchParams(window.location.search);
-      const targetId = urlParams.get('ch');
-      if (targetId) {
-        const found = this.channels.find(ch => ch.id === targetId);
-        if (found) this.currentActiveChannel = found;
-      }
-      if (!this.currentActiveChannel && this.channels.length > 0) {
-        this.currentActiveChannel = this.channels[0];
-      }
+      this.resolveInitialChannel();
 
       this.render();
       await this.embedPlyrSprite();
@@ -52,10 +44,41 @@
       this.initEventListeners();
       this.initWarpField();
 
+      // Handle user pasting or clicking a shared hash link
+      window.addEventListener('hashchange', () => {
+        this.handleHashChange();
+      });
+
       setTimeout(() => this.initPopup(), 400);
 
       if ('wakeLock' in navigator) {
         navigator.wakeLock.request('screen').catch(() => {});
+      }
+    }
+
+    resolveInitialChannel() {
+      const hash = window.location.hash;
+      if (hash && hash.includes('#match=')) {
+        const matchId = hash.replace('#match=', '').trim();
+        const found = this.channels.find(ch => ch.id === matchId);
+        if (found) {
+          this.currentActiveChannel = found;
+          return;
+        }
+      }
+      if (!this.currentActiveChannel && this.channels.length > 0) {
+        this.currentActiveChannel = this.channels[0];
+      }
+    }
+
+    handleHashChange() {
+      const hash = window.location.hash;
+      if (hash && hash.includes('#match=')) {
+        const matchId = hash.replace('#match=', '').trim();
+        const found = this.channels.find(ch => ch.id === matchId);
+        if (found && found.id !== (this.currentActiveChannel && this.currentActiveChannel.id)) {
+          this.loadChannel(found, false);
+        }
       }
     }
 
@@ -102,7 +125,6 @@
             --btn-main-text: #050a0f;
             --player-shadow: 0 45px 120px -20px rgba(0, 255, 204, 0.25);
 
-            /* Plyr Theme Overrides */
             --plyr-color-main: var(--accent);
             --plyr-video-background: #000;
             --plyr-video-controls-background: linear-gradient(180deg, transparent, rgba(0, 0, 0, 0.85));
@@ -228,8 +250,10 @@
           .tg-modal-icon svg { width: 34px; height: 34px; fill: var(--accent); }
           #tg-popup h3 { font-family: 'Space Grotesk', sans-serif; font-size: clamp(20px, 2.5vw, 24px); font-weight: 800; color: #fff; margin-bottom: 8px; text-transform: uppercase; }
           #tg-popup p { font-size: clamp(13px, 1.1vw, 15px); color: var(--text-main); line-height: 1.5; margin-bottom: 24px; font-weight: 600; }
-          #tg-join { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; height: 52px; border-radius: 100px; background: linear-gradient(135deg, #00ffcc 0%, #0096ff 100%); color: #000; font-family: 'Space Grotesk', sans-serif; font-size: 15px; font-weight: 900; text-transform: uppercase; letter-spacing: 1.5px; text-decoration: none; transition: all 0.3s ease; box-shadow: 0 10px 30px rgba(0, 255, 204, 0.3); cursor: margin-bottom: 12px; }
+          #tg-join { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; height: 52px; border-radius: 100px; background: linear-gradient(135deg, #00ffcc 0%, #0096ff 100%); color: #000; font-family: 'Space Grotesk', sans-serif; font-size: 15px; font-weight: 900; text-transform: uppercase; letter-spacing: 1.5px; text-decoration: none; transition: all 0.3s ease; box-shadow: 0 10px 30px rgba(0, 255, 204, 0.3); cursor: pointer; margin-bottom: 12px; }
+          #tg-join:hover { transform: translateY(-2px); box-shadow: 0 15px 40px rgba(0, 255, 204, 0.5); filter: brightness(1.1); }
           #tg-close { background: transparent; border: 1px solid var(--border-glass-bright); color: var(--text-muted); font-family: 'Space Grotesk', sans-serif; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; padding: 10px 20px; border-radius: 100px; cursor: pointer; transition: all 0.3s ease; }
+          #tg-close:hover { border-color: var(--accent); color: var(--text-main); }
           #status { position: fixed; left: 16px; bottom: 16px; z-index: 1000; color: #fff; background: rgba(5, 10, 15, 0.85); border: 1px solid rgba(0, 255, 204, 0.3); border-radius: 10px; padding: 10px 16px; font-size: 12px; backdrop-filter: blur(10px); }
           #status:empty { display: none; }
         </style>
@@ -395,18 +419,18 @@
 
       this.renderChannelButtons(this.channels);
       if (this.currentActiveChannel) {
-        this.loadChannel(this.currentActiveChannel);
+        this.loadChannel(this.currentActiveChannel, false);
       }
     }
 
-    async loadChannel(channel) {
+    async loadChannel(channel, updateHash = true) {
       this.currentActiveChannel = channel;
       this.showStatus('Switching to ' + channel.channel_name + '...');
 
-      // **URL Update Logic:** Push the ?ch= param to the address bar without reloading
-      if (window.history && window.history.pushState) {
-        const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?ch=' + channel.id;
-        window.history.pushState({ path: newUrl }, '', newUrl);
+      // Dynamic Hash update (#match=channel_id)
+      if (updateHash && window.history && window.history.replaceState) {
+        const targetUrl = `${window.location.origin}${window.location.pathname}#match=${channel.id}`;
+        window.history.replaceState(null, '', targetUrl);
       }
 
       const heroHeading = this._shadow.querySelector('#heroHeadlineText');
@@ -472,7 +496,7 @@
           ripple.style.width = ripple.style.height = Math.max(rect.width, rect.height) + 'px';
           btn.appendChild(ripple);
           setTimeout(() => ripple.remove(), 600);
-          this.loadChannel(ch);
+          this.loadChannel(ch, true);
         };
         container.appendChild(btn);
       });
@@ -489,21 +513,20 @@
       const btnShare = this._shadow.querySelector("#btnShare");
       const shareBtnText = this._shadow.querySelector("#shareBtnText");
       btnShare.addEventListener("click", async () => {
-        // **Dynamic Share Formatting:** Recreates the exact format you requested.
-        const channelName = this.currentActiveChannel ? this.currentActiveChannel.channel_name : "Live Match";
-        const shareUrl = window.location.href; // Uses the updated browser URL
+        const channelName = this.currentActiveChannel ? this.currentActiveChannel.channel_name : "Match Feed";
+        const channelId = this.currentActiveChannel ? this.currentActiveChannel.id : "live";
         
-        const formattedShareText = `Watch ${channelName} live on CRICXCRATE! ${shareUrl}`;
+        // Exact format: Watch [Name] live on CRICXCRATE! [URL]
+        const cleanBaseUrl = `${window.location.origin}${window.location.pathname}#match=${channelId}`;
+        const formattedShareMessage = `Watch ${channelName} live on CRICXCRATE! ${cleanBaseUrl}`;
 
         try {
           if (navigator.share && /mobile|android|iphone|ipad|tablet/i.test(navigator.userAgent)) {
-            await navigator.share({ 
-              title: "CRICXCRATE", 
-              text: `Watch ${channelName} live on CRICXCRATE!`, 
-              url: shareUrl 
+            await navigator.share({
+              text: formattedShareMessage
             });
           } else if (navigator.clipboard) {
-            await navigator.clipboard.writeText(formattedShareText);
+            await navigator.clipboard.writeText(formattedShareMessage);
             const originalText = shareBtnText.textContent;
             shareBtnText.textContent = "LINK COPIED!";
             setTimeout(() => shareBtnText.textContent = originalText, 1800);
